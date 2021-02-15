@@ -62,25 +62,19 @@ class Game:
                                        anchor=CENTER,
                                        font='Courier 25')
 
-    def show_score(self, canvas, score):
-        return self.canvas.create_text(0 + APPLE_WIDTH / 2 + 55, 25,
+    def show_score(self, score, score_text):
+        return self.canvas.itemconfig(score_text,
                                        fill='white',
                                        text=':' + str(score),
                                        anchor=CENTER,
                                        font='Courier 25')
 
     def show_max_score(self, max_score, max_score_text):
-        return self.canvas.create_text(0 + APPLE_WIDTH / 2 + 55, 25,
+        return self.canvas.itemconfig(max_score_text,
                                        fill='white',
                                        text=':' + str(max_score),
                                        anchor=CENTER,
                                        font='Courier 25')
-
-    def get_scores(self):
-        score = 0
-        max_score = 0
-
-        return score, max_score
 
     def get_directions(self, presses, last_pressed):
         if presses[-1] == 'w' and last_pressed != 's':
@@ -97,7 +91,7 @@ class Game:
 
         return last_pressed
 
-    def restart_snake_apple(self, snake, snake_list, snake_obj, apple, apple_obj, score_text):
+    def restart_snake_apple(self, snake, snake_list, snake_obj, apple, apple_obj, score_text, score):
         for i in snake_list:
             self.canvas.delete(i)
 
@@ -118,19 +112,20 @@ class Game:
 
         apple_x, apple_y = apple_obj.get_apple_coordinates(apple)
 
-        for s in snake_list[1:]:
+        for s in snake_list:
             if apple_x == self.canvas.coords(s)[0] and apple_y == self.canvas.coords(s)[1]:
                 self.canvas.delete(apple)
                 apple = apple_obj.create_apple()
 
         score += 1
+
         if score > max_score:
             max_score = score
 
         self.show_score(score, score_text)
         self.show_max_score(max_score, max_score_text)
 
-        return apple, score
+        return apple, score, max_score
 
 
 class Snake:
@@ -264,7 +259,7 @@ def main():
     apple_obj = Apple(canvas=canvas, apple_image=applex_image)
     apple = apple_obj.create_apple()
 
-    score, max_score = game.get_scores()
+    score, max_score = 0, 0
     score_text, max_score_text = game.get_score_text(score), game.get_max_score_text(max_score)
 
     snake_list = [snake]
@@ -284,7 +279,7 @@ def main():
         last_pressed = game.get_directions(presses=presses, last_pressed=last_pressed)
 
         if apple_obj.snake_eats_apple(snake=snake, apple=apple):
-            apple, score = game.respawn_apple(apple_obj=apple_obj,
+            apple, score, max_score = game.respawn_apple(apple_obj=apple_obj,
                                               apple=apple,
                                               snake_list=snake_list,
                                               score=score,
@@ -300,7 +295,8 @@ def main():
                                                                                                          snake_obj=snake_obj,
                                                                                                          apple=apple,
                                                                                                          apple_obj=apple_obj,
-                                                                                                         score_text=score_text)
+                                                                                                         score_text=score_text,
+                                                                                                         score=score)
 
         snake_x1, snake_y1, snake_x2, snake_y2 = snake_obj.get_snake_coordinates(snake)
 
@@ -312,7 +308,8 @@ def main():
                                                                                                          snake_obj=snake_obj,
                                                                                                          apple=apple,
                                                                                                          apple_obj=apple_obj,
-                                                                                                         score_text=score_text)
+                                                                                                         score_text=score_text,
+                                                                                                         score=score)
 
         snake = snake_obj.move_snake(snake_x1=snake_x1,
                                      snake_y1=snake_y1,
